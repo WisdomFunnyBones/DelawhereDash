@@ -1,0 +1,146 @@
+package View;
+
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public class TutorialPanel extends JPanel {
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		Image background = null;
+		try {
+			background = ImageIO.read(new File("images/woodback.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		background = background.getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
+		g.drawImage(background, 0, 0, null);
+	}
+
+	final static String LANELABEL = "Lane label";
+	final static String INVENTLABEL = "Inventory label";
+	final static String GARDENLABEL = "Garden label";
+	final static String WEATHERLABEL = "Weather label";
+	final static String WATERLABEL = "Water label";
+	static String CURRENTLABEL = LANELABEL;
+	
+	int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+	int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+	
+	
+	final static String[] LABELARRAY = new String[]{LANELABEL, INVENTLABEL, GARDENLABEL, WEATHERLABEL, WATERLABEL};
+	static int currentIndex = 0;
+	
+	JButton nextButton;
+	JButton previousButton;
+	JButton homeButton;
+	JPanel buttonPanel;
+	JPanel imagePanel;
+	
+	JLabel laneLabel;
+	JLabel inventLabel;
+	JLabel gardenLabel;
+	JLabel weatherLabel;
+	JLabel waterLabel;
+	
+	CardLayout cardLayout;
+
+	public TutorialPanel(){
+		int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+		int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+		
+		imagePanel = new JPanel();
+		
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		
+		setBackground(Color.cyan);
+		cardLayout = new CardLayout();
+		imagePanel.setLayout(cardLayout);
+		
+		nextButton = new JButton("Next");
+		previousButton = new JButton("Previous");
+		homeButton = new JButton("Home");
+
+		previousButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (currentIndex != 0){
+					cardLayout.previous(imagePanel);
+					currentIndex--;
+				}
+				else{
+				}
+			}
+			
+		});
+		nextButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (currentIndex != 3){
+					cardLayout.next(imagePanel);
+					currentIndex++;
+					System.out.println(currentIndex);
+					//CURRENTLABEL = LABELARRAY[currentIndex];
+				}
+				else{
+					System.out.println("end");
+				}
+			}
+		});
+		
+		ImageIcon dota = new ImageIcon("images/dota.jpg");
+		laneLabel = new JLabel(dota);
+		laneLabel = new JLabel();
+		imagePanel.setMaximumSize(laneLabel.getMinimumSize());
+		imagePanel.setOpaque(false);
+
+		laneLabel.setBackground(Color.red);
+		
+		inventLabel = new JLabel();
+		gardenLabel = new JLabel();
+		waterLabel = new JLabel();
+		waterLabel = new JLabel();
+		
+		imagePanel.setBorder(BorderFactory.createEmptyBorder(screenHeight/6, 0, 0, 0));
+
+		
+		imagePanel.add(laneLabel, LANELABEL);
+		imagePanel.add(inventLabel, INVENTLABEL);
+		imagePanel.add(gardenLabel, GARDENLABEL);
+		imagePanel.add(waterLabel, WEATHERLABEL);
+		imagePanel.add(waterLabel, WATERLABEL);
+		
+		buttonPanel = new JPanel();
+		buttonPanel.setOpaque(false);
+		buttonPanel.setPreferredSize(buttonPanel.getMinimumSize());
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+		buttonPanel.add(homeButton);
+		buttonPanel.add(previousButton);
+		buttonPanel.add(nextButton);
+
+		buttonPanel.setBorder(BorderFactory.createEmptyBorder(screenHeight/5, 0, 0, 0));
+		add(imagePanel);
+		add(buttonPanel);
+	}
+
+}

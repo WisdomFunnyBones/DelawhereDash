@@ -1,0 +1,49 @@
+package Model;
+
+public class Garden {
+	public static Animal[] animals;
+	public static int gardenCondition;
+	
+	public Garden(){
+		 animals = new Animal[6];
+		 animals[0] = new Rabbit(10, 20);
+		 animals[1] = new Rabbit(10, 80);
+		 animals[2] = new Rabbit(10, 140);
+		 animals[3] = new Rabbit(10, 200);
+		 animals[4] = new Rabbit(10, 260);
+		 animals[5] = new Rabbit(10, 320);
+
+		 gardenCondition = 100;
+		
+	}
+	
+	public void addAnimal(Animal animal){
+		for(int i = 0; i < animals.length; i++){
+			if(animals[i]== null){
+				animals[i] = animal;
+			}
+		}
+	}
+	
+	public int getGardenCondition(){
+		return gardenCondition;
+	}
+	
+	public static Animal[] getAnimals(){
+		return animals;
+	}
+	
+	
+	// updates the water condition depending on the plant that was picked up
+	public void update(){
+		LaneObject[] inventory = Inventory.getInventory();
+		
+		int count = 0;
+		for(LaneObject i : inventory){
+			if(i != null){
+				count+= ((Plant) i).getGardenbenefit();
+			}
+		}
+		gardenCondition += count;
+	}
+}

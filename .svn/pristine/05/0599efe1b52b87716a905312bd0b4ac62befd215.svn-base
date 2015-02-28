@@ -1,0 +1,34 @@
+package Model;
+
+public class Environment {
+	static int airQuality = 1500;
+	static int waterQuality = 2000;
+	static int animal1Quality = 2500;
+	
+	public int getAirQuality(){
+		return airQuality;
+	}
+	
+	public int getWaterQuality(){
+		return waterQuality;
+	}
+	
+	public void pickedPlant(boolean karma){
+		airQuality+=200;
+		waterQuality+=900;
+		if (karma==true){
+			animal1Quality+=900;
+		}
+		else{
+			animal1Quality-=20;
+		}
+	}
+	
+		
+	public void decreaseEnviro(int i){
+		airQuality-=i;
+		waterQuality-=i;
+		animal1Quality-=i;
+	}
+
+}

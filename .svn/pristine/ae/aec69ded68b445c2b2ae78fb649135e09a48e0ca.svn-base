@@ -1,0 +1,225 @@
+package View;
+
+import java.awt.CardLayout;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+import Controller.Controller;
+import Controller.GameThread;
+import Controller.GameThread.onStaminaDepletedListener;
+
+public class GameFrame extends JFrame implements KeyListener,
+		onStaminaDepletedListener {
+
+	final static String TITLEPANEL = "Title panel";
+	final static String TUTORIALPANEL = "Tutorial panel";
+	final static String COMICPANEL = "Comic panel";
+	final static String GAMEPLAYPANEL = "Gameplay panel";
+	final static String ENDPANEL = "End panel";
+
+	static String CURRENTPANEL = TITLEPANEL;
+
+	TitlePanel titlePanel;
+	TutorialPanel tutorialPanel;
+	ComicPanel comicPanel;
+	static GamePlayPanel gamePlayPanel;
+
+	public static GamePlayPanel getGamePlayPanel() {
+		return gamePlayPanel;
+	}
+
+	public static void setGamePlayPanel(GamePlayPanel gamePlayPanel) {
+		GameFrame.gamePlayPanel = gamePlayPanel;
+	}
+
+	EndPanel endPanel;
+
+	CardLayout cardLayout;
+
+	GameThread thread;
+
+	public GameFrame() {
+		setTitle("Delawhere Dash");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setResizable(false);
+		// gets the resolution of the current screen to set frame size
+		setSize(Toolkit.getDefaultToolkit().getScreenSize());
+
+		titlePanel = new TitlePanel();
+		tutorialPanel = new TutorialPanel();
+		comicPanel = new ComicPanel();
+		gamePlayPanel = new GamePlayPanel();
+		endPanel = new EndPanel();
+		titlePanel.newGameButton.requestFocusInWindow();
+
+		gamePlayPanel.addKeyListener(this);
+
+		cardLayout = new CardLayout();
+		setLayout(cardLayout);
+
+		// adding all of the sub-panels to the frame with their tags
+		add(titlePanel, TITLEPANEL);
+		add(tutorialPanel, TUTORIALPANEL);
+		add(comicPanel, COMICPANEL);
+		add(gamePlayPanel, GAMEPLAYPANEL);
+		add(endPanel, ENDPANEL);
+
+		titlePanel.newGameButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				cardLayout.show(getContentPane(), COMICPANEL);
+				CURRENTPANEL = COMICPANEL;
+				comicPanel.requestFocusInWindow();
+				comicPanel.nextButton.requestFocusInWindow();
+
+			}
+
+		});
+
+		titlePanel.tutorialButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				cardLayout.show(getContentPane(), TUTORIALPANEL);
+				CURRENTPANEL = TUTORIALPANEL;
+				tutorialPanel.requestFocusInWindow();
+				tutorialPanel.nextButton.requestFocusInWindow();
+
+			}
+
+		});
+
+		comicPanel.nextButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				comicPanel.nextButton.setVisible(false);
+				comicPanel.buttonPanel.remove(comicPanel.nextButton);
+				comicPanel.buttonPanel.add(comicPanel.playButton);
+				comicPanel.playButton.requestFocusInWindow();
+			}
+
+		});
+
+		comicPanel.backButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				cardLayout.show(getContentPane(), TITLEPANEL);
+				CURRENTPANEL = TUTORIALPANEL;
+				titlePanel.requestFocusInWindow();
+			}
+
+		});
+
+		comicPanel.playButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				cardLayout.show(getContentPane(), GAMEPLAYPANEL);
+				CURRENTPANEL = GAMEPLAYPANEL;
+				// handle re-adding next button
+				Font questionFont = new Font("questionFont", Font.BOLD, 25);
+				gamePlayPanel.getWeatherPanel().setFont(questionFont);
+				gamePlayPanel.requestFocusInWindow();
+				thread = new GameThread();
+				thread.start();
+			}
+
+		});
+
+		comicPanel.homeButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				cardLayout.show(getContentPane(), TITLEPANEL);
+				titlePanel.newGameButton.requestFocusInWindow();
+			}
+
+		});
+
+		endPanel.homeButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				thread.kill();
+				dispose();
+				Controller.createGame();
+				titlePanel.newGameButton.requestFocusInWindow();
+			}
+
+		});
+
+		tutorialPanel.homeButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				cardLayout.show(getContentPane(), TITLEPANEL);
+				titlePanel.newGameButton.requestFocusInWindow();
+			}
+
+		});
+
+		setVisible(true);
+	}
+
+	@Override
+	// This is the listener for game play it only works with that panel.
+	public void keyReleased(KeyEvent ev) {
+		if (CURRENTPANEL == GAMEPLAYPANEL) {
+			if (ev.getKeyCode() == KeyEvent.VK_X) {
+				int reply = JOptionPane.showConfirmDialog(null,
+						"Are you sure you want to quit?", "Warning",
+						JOptionPane.YES_NO_OPTION);
+				if (reply == JOptionPane.YES_OPTION) {
+					thread.kill();
+					dispose();
+					Controller.createGame();
+					GameThread.setIntroTrue();
+				}
+			} else if (ev.getKeyCode() == KeyEvent.VK_LEFT) {
+				Controller.getAstro().moveLeft();
+			} else if (ev.getKeyCode() == KeyEvent.VK_RIGHT) {
+				Controller.getAstro().moveRight();
+			}
+		}
+	}
+
+	public void showEnd() {
+		Object[] o = new Object[] { "Continue" };
+		int result = JOptionPane.showOptionDialog(null, "Game Over",
+				"Game Over", JOptionPane.PLAIN_MESSAGE,
+				JOptionPane.QUESTION_MESSAGE, null, o, o[0]);
+		if (result == JOptionPane.YES_NO_OPTION || result == JOptionPane.CLOSED_OPTION) {
+			cardLayout.show(getContentPane(), ENDPANEL);
+			CURRENTPANEL = ENDPANEL;
+			endPanel.requestFocusInWindow();
+		}
+	}
+
+	@Override
+	public void onStaminaDepleted() {
+		showEnd();
+
+	}
+
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

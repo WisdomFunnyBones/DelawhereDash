@@ -1,0 +1,678 @@
+package View;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import Controller.Controller;
+import Controller.Controller.OnDamagedListener;
+import Model.Animal;
+import Model.Astronaut;
+import Model.Garden;
+import Model.Inventory;
+import Model.Inventory.OnItemAddListener;
+import Model.Lane;
+import Model.LaneObject;
+import Model.Plant;
+import Model.Water;
+import Model.Weather;
+
+public class GamePlayPanel extends JPanel implements OnItemAddListener, OnDamagedListener{
+
+	private static final long serialVersionUID = 1L;
+	
+	int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+	int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+
+	int COLUMN0;
+	int COLUMN1;
+	int COLUMN2;
+	int COLUMN3;
+	int COLUMN4;
+	
+	int introInt=0;
+	int adder = 10;
+	int acceleration=0;
+	int astroYCoord;
+	
+	public int getAstroYCoord(){
+		return astroYCoord;
+	}
+	
+	BorderLayout layout;
+
+	JPanel weatherPanel;
+	public JPanel getWeatherPanel() {
+		return weatherPanel;
+	}
+
+	JPanel inventoryPanel;
+	JPanel gardenPanel;
+	JPanel oceanPanel;
+	LanesPanel lanesPanel;
+	
+	public JPanel getGardenPanel(){
+		return gardenPanel;
+	}
+
+	public LanesPanel getLanesPanel() {
+		return lanesPanel;
+	}
+
+	boolean damaged = false;
+	int damageTimer = 0;
+	boolean dmgTimerRunning = false;
+
+	BoxLayout inventoryLayout;
+
+	GenericItem item0;
+	GenericItem item1;
+	GenericItem item2;
+	GenericItem item3;
+	GenericItem item4;
+	GenericItem item5;
+
+	ImageIcon laneIcon;
+
+	int lanesPanelWidth;
+	final int spacerWidth;
+
+	final Image finLanesImg;
+	final Image finAstroImg;
+	final Image finDmgAstroImg;
+	final Image finGrassZ;
+	
+	int astroWidth;
+
+	int astroHeight;
+	
+	public boolean fact = false;
+	public boolean question = false;
+
+	public int getAstroWidth() {
+		return astroWidth;
+	}
+
+	public int getAstroHeight() {
+		return astroHeight;
+	}
+	
+	public Timer factTimer;
+	public Timer answerTimer;
+	public int factDuration;
+	public int answerDuration;
+	
+	int background1=0;
+	int background2=0;
+	int background3=0;
+	
+	boolean firstCall=true;
+	boolean secondCall=false;
+	
+	boolean gardenLoaded = false;
+	boolean weatherLoaded = false;
+	boolean spacerLoaded = false;
+	boolean genericItemLoaded = false;
+	boolean oceanLoaded = false;
+
+	public GamePlayPanel() {
+		Astronaut astro = Controller.astro; //assigns the astronaut class instance created in controller
+		Weather weather = Controller.weather;// assigns the weather class instance created in controller
+		Garden garden = Controller.garden; //assigns the garden class "" ""
+		Lane lanes	= Controller.lanes; // assigns the lane class "" ""
+		Water water = Controller.water; // assigns the water class "" ""
+		
+		//initializing images
+		Image weatherImg = null;
+		Image gardenImg = null;
+		Image lanesImg = null;
+		Image oceanImg = null;
+		Image astroImg = null;
+		Image dmgAstroImg = null;
+		Image backwood = null;
+		Image frontwood = null;
+		Image grassZ = null;
+		try {
+			//trying to load the images from files
+			weatherImg = weather.getWeatherImg();
+			gardenImg = garden.getGardenImg();
+			lanesImg = lanes.getLanesImg();
+			oceanImg = water.getWaterImg();
+			astroImg = astro.getAstroImg();
+			dmgAstroImg = astro.getDmgAstroImg();
+			backwood = ImageIO.read((new File("images/backwood.png")));
+			frontwood = ImageIO.read(new File("images/frontwood.png"));
+			grassZ = ImageIO.read(new File("images/grasszombieback.png"));
+		} catch (IOException e3) {
+			e3.printStackTrace();
+		}
+		
+		//creates a final image from the loaded images, required by some panels
+		final Image finWeatherImg = weatherImg;
+		final Image finGardenImg = gardenImg;
+		finLanesImg = lanesImg;
+		final Image finOceanImg = oceanImg;
+		finAstroImg = astroImg.getScaledInstance(astroImg.getWidth(null)/10, astroImg.getHeight(null)/10, Image.SCALE_SMOOTH);
+		finDmgAstroImg = dmgAstroImg.getScaledInstance(astroImg.getWidth(null)/10, astroImg.getHeight(null)/10, Image.SCALE_SMOOTH);
+		finGrassZ = grassZ.getScaledInstance(grassZ.getWidth(null)/10,grassZ.getHeight(null)/10,Image.SCALE_SMOOTH);
+		
+
+		//sets variables of astronaut's dimensions for collision purposes
+		astroWidth = finAstroImg.getWidth(null);
+		astroHeight = finAstroImg.getHeight(null);
+		introInt=(int)(-3*astroHeight);
+		
+		//panel representing weather & air quality
+		weatherPanel = new JPanel(){
+
+			Image weatherImage;
+			int width;
+			int height;
+			int x;
+			int y;
+
+			
+			public void paint(Graphics g){
+				
+				if (!weatherLoaded){
+					weatherImage = finWeatherImg.getScaledInstance(this.getPreferredSize().width, this.getPreferredSize().height, Image.SCALE_SMOOTH);
+					width = (int) weatherPanel.getSize().getWidth();
+					height = (int) weatherPanel.getSize().getHeight();
+					x = width/80;
+					y = height/10;
+					width-=x*2;
+					height-=y*2;
+					//setFont(questionFont);
+					//System.out.println(g.getFont());
+					weatherLoaded = true;
+				}
+
+				g.drawImage(weatherImage, 0, 0, null);
+				
+				if (factDuration == 10){
+					fact = false;
+					factTimer.stop();
+					repaint();
+				}
+				if (answerDuration == 10){
+					question = false;
+					answerTimer.stop();
+					repaint();
+				}
+				/*
+				 * when we want to show the fact to the user, set "fact" to true and 
+				 * repaint this panel. set false when you no longer want to show it
+				 */
+				if (fact){
+					
+					g.setColor(new Color(0, 0, 0, 150));
+					g.fillRoundRect(x, y, width, height, 20, 20);
+
+					g.setColor(Color.white);
+					String questionString = "This is just a test of a fact that we will be showing the user.";
+					int stringLength = (int) g.getFontMetrics().getStringBounds(questionString, g).getWidth();
+					int stringHeight = (int) g.getFontMetrics().getStringBounds(questionString, g).getHeight();
+					int start = (width/2) - stringLength/2;
+					int end = (height/2) + stringHeight/2;
+					g.drawString(questionString, start , end);
+				}
+				/*
+				 * set question to true when we want to show the question
+				 */
+				else if (question){
+
+					g.setColor(new Color(0, 0, 0, 150));
+					g.fillRoundRect(x, y, width, height, 20, 20);
+
+					g.setColor(Color.white);
+					String test = "This is just a question of a fact that we will be showing the user?";
+					String[] answers = new String[]{"a. these", "b. are", "c. the", "d. an", "e. sers"};
+					int stringLength = (int) g.getFontMetrics().getStringBounds(test, g).getWidth();
+					int stringHeight = (int) g.getFontMetrics().getStringBounds(test, g).getHeight();
+					int start = (width/2) - stringLength/2;
+					int end = (height/2) + stringHeight/2;
+					g.drawString(test, start, (end - stringHeight/2));
+					String answerConcat = "";
+					for (int j = 0; j < answers.length; j++){
+						answerConcat = answerConcat.concat(answers[j] + "     ");
+					}
+					answerConcat = answerConcat.trim();
+					int answerWidth = (int) g.getFontMetrics().getStringBounds(answerConcat, g).getWidth();
+					int answerStart = (width/2) - answerWidth/2;
+					g.drawString(answerConcat, answerStart , (end + stringHeight));
+					
+				}
+
+			}
+		};
+
+		inventoryPanel = new JPanel();
+
+		gardenPanel = new JPanel(){
+			private static final long serialVersionUID = 1L;
+
+			Image gardenImage1;
+			Image gardenImage2;
+			Image gardenImage3;
+			
+			public void paint(Graphics g){
+				// prints the animals stored in the animal array located in the Garden class
+				
+				//checks if the sizes have been loaded so that we don't set images every paint
+				if (!gardenLoaded){
+					gardenImage1 = finGardenImg.getScaledInstance(this.getSize().width, this.getSize().height, Image.SCALE_SMOOTH);
+					gardenImage2 = gardenImage1;
+					gardenImage3 = gardenImage1;
+					gardenLoaded = true;
+				}
+
+				//draws moving background
+				g.drawImage(gardenImage1, 0, background1, null);
+				
+				if(secondCall){
+					background2=(-1)*gardenImage1.getHeight(null)+gardenImage1.getHeight(null);
+					background3=(-2)*gardenImage1.getHeight(null)+gardenImage1.getHeight(null);
+					secondCall=false;
+				}
+				
+				g.drawImage(gardenImage2, 0, background2, null);
+				g.drawImage(gardenImage3, 0, background3, null);
+				
+				for(Animal i : Garden.animals){
+					int res = i.getImage().getWidth(null) / i.getImage().getHeight(null);
+					Image resizedAnimal = i.getImage().getScaledInstance( (int) (getSize().getHeight()/7)*res, (int) (getSize().getHeight()/7), Image.SCALE_SMOOTH);
+					g.drawImage(resizedAnimal, i.getX(), (int) (i.getY()*1.3), null);
+
+					int ylocation = (int) (getSize().getHeight()/25);
+
+					// pulls plants in inventory, resizes them, and prints them into garden
+					for(int j = 0; j < Inventory.getInventory().length; j++){
+						if(Inventory.getInventory()[j] != null){
+							Image plantImg = Inventory.getInventory()[j].getImage();
+							int plantRes = Inventory.getInventory()[j].getImage().getWidth(null)/
+									Inventory.getInventory()[j].getImage().getHeight(null);
+							plantImg = plantImg.getScaledInstance(resizedAnimal.getHeight(null)*plantRes, 
+									resizedAnimal.getHeight(null), Image.SCALE_SMOOTH);
+							
+							//prints the plant
+							g.drawImage(plantImg, (int) (getSize().getWidth()*3)/7, ylocation, null);
+							ylocation+=(getSize().getHeight()*4)/25;
+						}
+					}
+				}
+			}
+
+		};
+
+		oceanPanel = new JPanel(){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			public void paint(Graphics g){
+				Image image = finOceanImg.getScaledInstance(this.getPreferredSize().width, this.getPreferredSize().height, Image.SCALE_SMOOTH);
+				g.drawImage(image, 0, 0, null);
+			}
+		};
+		// Constants for positions
+		//COLUMN2 = (screenWidth / 2) - (resizedAstro.getWidth(null) / 2);
+		COLUMN2 = 0;
+		COLUMN1 = COLUMN2 - COLUMN2 / 5;
+		COLUMN0 = COLUMN1 - COLUMN2 / 5;
+		COLUMN3 = COLUMN2 + COLUMN2 / 5;
+		COLUMN4 = COLUMN3 + COLUMN2 / 5;
+
+		lanesPanel = new LanesPanel();
+
+		weatherPanel.setPreferredSize(new Dimension(screenWidth, screenHeight / 8));
+		inventoryPanel.setPreferredSize(new Dimension(screenWidth, screenHeight / 9));
+		gardenPanel.setPreferredSize(new Dimension(screenWidth / 6, screenHeight));
+		oceanPanel.setPreferredSize(new Dimension(screenWidth / 6, screenHeight));
+
+		spacerWidth = screenWidth/30;
+		final int itemWidth = (screenWidth - (spacerWidth)*7)/6;
+
+		int inventHeight = inventoryPanel.getPreferredSize().height;
+
+		item0 = new GenericItem(backwood, 0, itemWidth, inventHeight);
+		item1 = new GenericItem(backwood, 1, itemWidth, inventHeight);
+		item2 = new GenericItem(backwood, 2, itemWidth, inventHeight);
+		item3 = new GenericItem(backwood, 3, itemWidth, inventHeight);
+		item4 = new GenericItem(backwood, 4, itemWidth, inventHeight);
+		item5 = new GenericItem(backwood, 5, itemWidth, inventHeight);
+
+		inventoryLayout = new BoxLayout(inventoryPanel, BoxLayout.LINE_AXIS);
+		inventoryPanel.setLayout(inventoryLayout);
+		inventoryPanel.add(new Spacer(frontwood));
+		inventoryPanel.add(item0);
+		inventoryPanel.add(new Spacer(frontwood));
+		inventoryPanel.add(item1);
+		inventoryPanel.add(new Spacer(frontwood));
+		inventoryPanel.add(item2);
+		inventoryPanel.add(new Spacer(frontwood));
+		inventoryPanel.add(item3);
+		inventoryPanel.add(new Spacer(frontwood));
+		inventoryPanel.add(item4);
+		inventoryPanel.add(new Spacer(frontwood));
+		inventoryPanel.add(item5);
+		inventoryPanel.add(new Spacer(frontwood));
+
+		layout = new BorderLayout();
+		setLayout(layout);
+
+		add(weatherPanel, BorderLayout.PAGE_START);
+		add(gardenPanel, BorderLayout.LINE_START);
+		add(lanesPanel, BorderLayout.CENTER);
+		add(oceanPanel, BorderLayout.LINE_END);
+		add(inventoryPanel, BorderLayout.PAGE_END);
+
+	}
+
+	public final class LanesPanel extends JPanel implements ActionListener {
+		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		boolean timerRunning;
+		Timer timer;
+		int currTime;
+		int duration = 4;
+
+		public void startTimer(){
+			this.timerRunning = true;
+			this.currTime = 0;
+			this.timer.start();
+		}
+
+		@Override
+		public void paint(Graphics g) {
+			astroYCoord=(int)lanesPanel.getSize().getHeight() * 9/10;
+			int count = 0;
+			Image grassImg1 = finLanesImg.getScaledInstance(lanesPanel.getSize().width, 
+					lanesPanel.getSize().height, Image.SCALE_SMOOTH);
+			Image grassImg2 = grassImg1;
+			Image grassImg3 = grassImg1;
+			g.drawImage(grassImg1, 0, background1, null);
+			if(secondCall){
+				background2=(-1)*grassImg1.getHeight(null)+grassImg1.getHeight(null);
+				background3=(-2)*grassImg1.getHeight(null)+grassImg1.getHeight(null);
+				secondCall=false;
+			}
+			g.drawImage(grassImg2, 0, background2, null);
+			g.drawImage(grassImg3, 0, background3, null);
+			
+			lanesPanelWidth = (int) lanesPanel.getSize().getWidth();
+
+			COLUMN2 = (int) (lanesPanel.getSize().getWidth()/2 - (finAstroImg.getWidth(null)/2));
+			COLUMN1 = COLUMN2 - (COLUMN2/10) - COLUMN2 / 3;
+			COLUMN0 = COLUMN1 - (COLUMN2/10) - COLUMN2 / 3;
+			COLUMN3 = COLUMN2 + (COLUMN2/10) + COLUMN2 / 3;
+			COLUMN4 = COLUMN3 + (COLUMN2/10) + COLUMN2 / 3;
+						
+			for (LaneObject[] laneArray : Controller.getLanes().getLanes()) {
+				for (int i = 0; i < laneArray.length; i++) {
+					if (laneArray[i] != null) {
+						Image objectImage = laneArray[i].getImage();
+						int resObject = objectImage.getWidth(null)/objectImage.getHeight(null);
+						if (laneArray[i] instanceof Plant){
+							g.drawImage(objectImage.getScaledInstance((int)(resObject*finAstroImg.getHeight(null)*(1)), (int)(finAstroImg.getHeight(null)*(1)), Image.SCALE_SMOOTH), paintPos(count)-((int)(resObject*finAstroImg.getHeight(null)*(0.25))),
+									laneArray[i].getY(), null, this);
+						}
+						else{
+							g.drawImage(objectImage.getScaledInstance((int)(resObject*finAstroImg.getHeight(null)*(0.5)), (int)(finAstroImg.getHeight(null)*(0.5)), Image.SCALE_SMOOTH), paintPos(count)-((int)(resObject*finAstroImg.getHeight(null)*(0.0625))),
+								laneArray[i].getY(), null, this);
+						}
+						/*
+						 * the laneArray[i].getY() causes a non-crashing exception because
+						 * you are painting the items offscreen
+						 */
+					}
+				}
+				count++;
+			}
+			if(Controller.getIntro()){
+				introInt+=(int)(screenHeight/30) + acceleration;
+				if (introInt +(int)(screenHeight/30)+acceleration> ((int) lanesPanel.getSize().getHeight()) * 33/40){
+					Controller.setIntro();
+				}
+				if(acceleration<10){
+					acceleration+=1;
+				}
+				g.drawImage(finGrassZ, paintPos(0)-(int)(finGrassZ.getWidth(null)*(0.125)), introInt+(astroHeight*3), null);
+				g.drawImage(finGrassZ, paintPos(1)-(int)(finGrassZ.getWidth(null)*(0.125)), introInt+(astroHeight*2), null);
+				g.drawImage(finGrassZ, paintPos(2)-(int)(finGrassZ.getWidth(null)*(0.125)), introInt+(astroHeight), null);
+				g.drawImage(finGrassZ, paintPos(3)-(int)(finGrassZ.getWidth(null)*(0.125)), introInt+(astroHeight*2), null);
+				g.drawImage(finGrassZ, paintPos(4)-(int)(finGrassZ.getWidth(null)*(0.125)), introInt+(astroHeight*3), null);
+			}
+			
+			if (Controller.getAstro().getDamaged() == true){
+				g.drawImage(finDmgAstroImg, paintPos(Controller.getAstro().getPosition()), introInt, null);
+
+			}
+			else{
+				g.drawImage(finAstroImg, paintPos(Controller.getAstro().getPosition()), introInt, null);
+
+			}
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent ae) {
+			timerRunning = false;
+			this.timer.stop();
+		}
+
+	}
+
+	public int paintPos(int pos) {
+		switch (pos) {
+		case 0:
+			return COLUMN0;
+		case 1:
+			return COLUMN1;
+		case 2:
+			return COLUMN2;
+		case 3:
+			return COLUMN3;
+		case 4:
+			return COLUMN4;
+
+		}
+		return COLUMN2;
+	}
+
+	//these are the separators in the inventory panel
+	class Spacer extends JPanel{
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		Image image;
+
+		@Override
+		public void paint(Graphics g) {
+			g.drawImage(image,  0,  0,  null);
+		}
+
+		Spacer(Image image){
+			setMaximumSize(new Dimension(spacerWidth-1, inventoryPanel.getPreferredSize().height));
+			setPreferredSize(getMaximumSize());
+			this.image = image.getScaledInstance(getMaximumSize().width, getMaximumSize().height, Image.SCALE_SMOOTH);;
+		}
+	}
+
+	//this is a panel in the inventory that holds plants
+	final class GenericItem extends JPanel implements ActionListener{
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		int pos;
+		Image image;
+		int duration;
+		int currTime;
+		boolean timerRunning;
+		Timer timer;
+
+		public void startTimer(int duration){
+			this.timerRunning = true;
+			this.duration = duration;
+			this.currTime = 0;
+			this.timer.start();
+		}
+
+		@Override
+		public void paint(Graphics g) {
+			g.drawImage(image,  0,  0,  null);
+
+			if (this.timerRunning){
+				int width = getMaximumSize().width;
+				int height = getMaximumSize().height;
+				int x = width/10;
+				int y = height/10;
+				width = width - x*2;
+				height = height - y*2;
+
+				Color backColor = new Color(0, 0, 0, 128);
+				g.setColor(backColor);
+				g.fillRoundRect(x, y, width, height, 15, 15);
+				Color frontColor = new Color(200, 255, 200, 90);
+				g.setColor(frontColor);
+
+				double dblCurr = currTime;
+				double dblDur = duration;
+
+				int timerHeight = (int) (y + (height * (dblCurr/dblDur)));
+
+				g.fillRoundRect(x, timerHeight, width, height - timerHeight + y, 15, 15);
+
+				if (Inventory.getInventory() != null && Inventory.getInventory()[pos] != null){
+					Image plantImg = Inventory.getInventory()[pos].getImage();
+					int res = plantImg.getWidth(null)/plantImg.getHeight(null);
+					Image scaledImg = plantImg.getScaledInstance(res*(height - height/10), (height - height/10), Image.SCALE_SMOOTH);
+					int drawX = (width/2) - (scaledImg.getWidth(null)/2) + x;
+					int drawY = (height/2) - (scaledImg.getHeight(null)/2) + y;
+					g.drawImage(scaledImg, drawX, drawY, null);
+				}
+			}
+
+
+		}
+
+		GenericItem(Image image, int itemNumber, int itemWidth, int inventHeight){
+			this.pos = itemNumber;
+			this.image = image;
+			this.timerRunning = false;
+			setMaximumSize(new Dimension(itemWidth, inventHeight));
+			setPreferredSize(getMaximumSize());
+			this.image = image.getScaledInstance(getMaximumSize().width, getMaximumSize().height, Image.SCALE_SMOOTH);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent ae) {
+			if (currTime == this.duration){
+				this.timer.stop();
+				this.timerRunning = false;
+				currTime = 0;
+				this.repaint();
+				Inventory.getInventory()[this.pos] = null;
+				gardenPanel.repaint();
+
+			}
+			else{
+				this.currTime++;
+				this.repaint();
+			}
+
+		}
+
+	}
+
+	@Override
+	public void onItemAdded(int position, LaneObject laneObject) {
+		if (laneObject instanceof Plant){
+			Plant plant = (Plant) laneObject;
+
+			switch (position){
+			case 0:
+				item0.repaint();
+				item0.timer = new Timer(1000, item0);
+				item0.startTimer(plant.getDuration());
+				break;
+			case 1:
+				item1.repaint();
+				item1.timer = new Timer(1000, item1);
+				item1.startTimer(plant.getDuration());
+				break;
+			case 2:
+				item2.repaint();
+				item2.timer = new Timer(1000, item2);
+				item2.startTimer(plant.getDuration());
+				break;
+			case 3:
+				item3.repaint();
+				item3.timer = new Timer(1000, item3);
+				item3.startTimer(plant.getDuration());
+				break;
+			case 4:
+				item4.repaint();
+				item4.timer = new Timer(1000, item4);
+				item4.startTimer(plant.getDuration());
+				break;
+			case 5:
+				item5.repaint();
+				item5.timer = new Timer(1000, item5);
+				item5.startTimer(plant.getDuration());
+				break;
+			}
+		}
+		gardenPanel.repaint();
+
+	}
+
+	@Override
+	public void onDamaged() {
+		lanesPanel.timer = new Timer(600, lanesPanel);
+		lanesPanel.startTimer();
+		lanesPanel.repaint();
+	}
+	
+	public void updateBackground(){
+		if (firstCall){
+			background1=0;
+			firstCall=false;
+			secondCall=true;
+		}
+		else{
+			background1+=Controller.getSpeed();
+			if (background1>lanesPanel.getSize().height){
+				background1=(-1)*lanesPanel.getSize().height+Controller.getSpeed();
+			}
+			background2+=Controller.getSpeed();
+			if (background2>lanesPanel.getSize().height){
+				background2=(-1)*lanesPanel.getSize().height+Controller.getSpeed();
+			}
+			background3+=Controller.getSpeed();
+			if (background3>lanesPanel.getSize().height){
+				background3=(-1)*lanesPanel.getSize().height+Controller.getSpeed();
+			}
+		}
+	}
+}

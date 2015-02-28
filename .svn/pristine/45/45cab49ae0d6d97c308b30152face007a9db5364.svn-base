@@ -1,0 +1,29 @@
+package Test;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import Controller.GameThread;
+
+public class GameThreadTest {
+
+	@Test
+	public void testRun() {
+		GameThread t = new GameThread();
+		t.run();
+		assertEquals(t.isKeepGoing(), true);
+		//assertEquals(t.getKeepGoing(), true);
+		t.kill();
+	}
+
+	@Test
+	public void testKill() {
+		GameThread t = new GameThread();
+		t.run();
+		t.kill();
+		assertEquals(t.isKeepGoing(), false);
+		//assertEquals(t.getKeepGoing(), false);
+	}
+
+}

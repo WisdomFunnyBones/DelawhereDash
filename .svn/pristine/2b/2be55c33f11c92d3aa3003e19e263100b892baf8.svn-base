@@ -1,0 +1,31 @@
+package Test;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import Controller.Controller;
+import Model.Lane;
+
+public class ControllerTest {
+
+	@Test
+	public void testGetAstro() {
+		Controller.createGame();
+		//Astronaut a = new Astronaut(Controller.STAMINA, Controller.STARTINGX,
+				//Controller.STARTINGY);
+		//assertEquals(Controller.getAstro().getStamina(), a.getStamina());
+	}
+
+	@Test
+	public void testGetLanes() {
+		Lane l = new Lane();
+		assertEquals(Controller.getLanes(), l);
+	}
+
+	@Test
+	public void testRepaint() {
+		//assertTrue(Controller.getFrame().isValid() == true);
+	}
+
+}

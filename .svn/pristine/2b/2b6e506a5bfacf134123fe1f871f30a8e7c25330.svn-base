@@ -1,0 +1,148 @@
+package Controller;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Timer;
+
+import Model.Animal;
+import Model.Inventory;
+import Model.LaneObject;
+import Model.Obstacle;
+import Model.Plant;
+import View.GameFrame;
+
+public class GameThread extends Thread {
+
+	static boolean intro=true;
+	int COLLISIONPROTECTION = 60;
+	// This thread runs constantly and repaints.
+	private boolean keepGoing = true;
+
+	public interface onStaminaDepletedListener {
+		void onStaminaDepleted();
+
+	}
+
+	public void pause(){
+		if(keepGoing)
+			keepGoing=false;
+		else
+			keepGoing=true;
+	}
+
+
+	public static boolean getIntro(){
+		return intro;
+	}
+
+	public static void setIntro(){
+		intro=false;
+	}
+
+	public static void setIntroTrue(){
+		intro=true;
+	}
+
+	public boolean isKeepGoing() {
+		return keepGoing;
+	}
+
+	public void setKeepGoing(boolean keepGoing) {
+		this.keepGoing = keepGoing;
+	}
+
+	@Override
+	public void run() {
+		int count = COLLISIONPROTECTION;
+		while (keepGoing) {
+			//System.out.println("Air=" + Controller.getEnviro().getAirQuality());
+			//System.out.println("Water=" + Controller.getEnviro().getWaterQuality());
+			boolean full = true;
+			for (int j = 0; j < Inventory.getInventory().length; j++) {
+				if (Inventory.getInventory()[j] == null) {
+					full = false;
+				}
+			}
+			try {
+				Controller.getAstro().depleteStamina(1);
+				if(Controller.getEnviro().getAirQuality()>0 && Controller.getEnviro().getWaterQuality()>0 && !intro){
+					Controller.getEnviro().decreaseEnviro(1);
+				}
+				if (Math.random() > .5)
+					Controller.getLanes().addNewItem();
+				Controller.move();
+				sleep(33);
+				Controller.repaint();
+				if (Controller.currentTime == 10 && GameFrame.getGamePlayPanel().fact == false){
+					GameFrame.getGamePlayPanel().fact = true;
+					GameFrame.getGamePlayPanel().factTimer =(new Timer(1000, new ActionListener(){
+
+						@Override
+						public void actionPerformed(ActionEvent ae) {
+							GameFrame.getGamePlayPanel().factDuration++;
+							GameFrame.getGamePlayPanel().getWeatherPanel().repaint();
+						}
+
+					}));
+					GameFrame.getGamePlayPanel().factTimer.start();
+					GameFrame.getGamePlayPanel().getWeatherPanel().repaint();
+				}
+				if (Controller.currentTime == 15){
+					//Lane.questionMode = true;
+				}
+				LaneObject[] laneArray = Controller.getLanes().getLanes()[Controller.getAstro().getPosition()];
+				for (int i = 0; i < laneArray.length; i++) {
+					if (laneArray[i] != null) {
+						if (Controller.collided(laneArray[i]) != null) {
+							if (Controller.getAstro().getDamaged()==false
+									&& (laneArray[i] instanceof Obstacle)) {
+								if (laneArray[i] instanceof Animal) {
+									Controller.getLanes().removeAnimals();
+								}
+								else
+									Controller.getLanes().removeCloNPud();
+								laneArray[i] = null;
+								Controller.getAstro().Damaged(true);
+								System.out.println("collided");
+							} else if (laneArray[i] instanceof Plant
+									&& full == false) {
+								Controller.updatePanels(laneArray[i]);
+								Controller.getLanes().removePlants();
+								laneArray[i] = null;
+								Controller.getEnviro().pickedPlant(false);
+
+								//should replace the above line of code if we chose to go that way
+//								Controller.updatePanels(laneArray[i]); // updates weather, water and garden panel Conditions
+								
+							}
+
+						}
+					}
+
+				}
+				if (Controller.getAstro().getStamina() <= 0) {
+					kill();
+					onStaminaDepletedListener endListener = Controller
+							.getFrame();
+					endListener.onStaminaDepleted();
+
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (Controller.getAstro().getDamaged()) {
+				count--;
+				if (count == 0) {
+					Controller.getAstro().Damaged(false);
+					count = COLLISIONPROTECTION;
+				}
+			}
+		}
+	}
+
+	public void kill() {
+		keepGoing = false;
+	}
+
+}

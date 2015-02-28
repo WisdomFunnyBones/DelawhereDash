@@ -1,0 +1,110 @@
+package Model;
+
+import java.awt.image.BufferedImage;
+
+public class Astronaut {
+	int stamina; // health, depletes till end of gameplay sequence
+	int yLoc; //Astronaut's current y position
+	int xLoc; // Astronaut's current x position
+	boolean damaged; // Astronaut been hit - if true he is damaged
+	boolean invincibility; // Astronaut cannot be hurt
+	int position = 2; // 0 is farthest left, 0,1,2,3,4
+	BufferedImage astro;
+
+	public Astronaut(int stamina, int xLoc, int yLoc) {
+		this.xLoc=xLoc;
+		this.yLoc=yLoc;
+		this.stamina = stamina;
+	}
+
+	//When we get size compare y to that.
+	public boolean collided(LaneObject o){
+		if (o.xLoc==this.xLoc && o.yLoc==yLoc){
+			Obstacle obstacle = (Obstacle) o;
+			this.depleteStamina(obstacle.getStaminaPenalty());
+			return true;
+		}
+		return false;
+	}
+
+	public int getStamina() {
+		return this.stamina;
+	}
+
+	public int getPosition() {
+		return this.position;
+	}
+
+	//Move left if you can move left (increment position down).
+	public boolean moveLeft() {
+		boolean moved = false;
+		switch (position) {
+		case 1:
+			position = 0;
+			moved = true;
+			break;
+		case 2:
+			position = 1;
+			moved = true;
+			break;
+		case 3:
+			position = 2;
+			moved = true;
+			break;
+		case 4:
+			position = 3;
+			moved = true;
+			break;
+		}
+		return moved;
+	}
+
+	//Moves right (increments position) if you can move right.
+	public boolean moveRight() {
+		boolean moved = false;
+		switch (position) {
+		case 0:
+			position = 1;
+			moved = true;
+			break;
+		case 1:
+			position = 2;
+			moved = true;
+			break;
+		case 2:
+			position = 3;
+			moved = true;
+			break;
+		case 3:
+			position = 4;
+			moved = true;
+			break;
+		}
+		return moved;
+	}
+
+	public void depleteStamina(int amount) {
+		this.stamina -= amount;
+	}
+	public void setStamina(int amount) {
+		this.stamina = amount;
+	}
+
+	public int getY() {
+		return yLoc;
+	}
+
+	public void Damaged(boolean damage){
+		if(damage){
+			damaged = true;
+		}
+		else{
+			damaged = false;
+		}
+	}
+
+	public boolean getDamaged(){
+		return damaged;
+	}
+
+}

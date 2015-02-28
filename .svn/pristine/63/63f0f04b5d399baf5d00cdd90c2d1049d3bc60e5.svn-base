@@ -1,0 +1,40 @@
+package Model;
+import Model.Weather;
+import Model.Water;
+
+public class Environment {
+	static int airQuality = Weather.getWeatherCondition();
+	static int waterQuality = Water.getWaterCondition();
+	static int animal1Quality = Garden.getGardenCondition();
+	static int animal2Quality = 750;
+	static int animal3Quality = 750;
+	static int animal4Quality = 750;
+	static int animal5Quality = 750;
+	
+	public int getAirQuality(){
+		return airQuality;
+	}
+	
+	public int getWaterQuality(){
+		return waterQuality;
+	}
+	
+	public void pickedPlant(boolean karma){
+		airQuality+=200;
+		waterQuality+=200;
+		if (karma==true){
+			animal1Quality+=20;
+		}
+		else{
+			animal1Quality-=20;
+		}
+	}
+	
+		
+	public void decreaseEnviro(int i){
+		airQuality-=i;
+		waterQuality-=i;
+		animal1Quality-=i;
+	}
+
+}

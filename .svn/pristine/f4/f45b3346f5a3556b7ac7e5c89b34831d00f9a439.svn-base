@@ -1,0 +1,32 @@
+package Model;
+
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+public class ScarletOak extends Plant{
+	
+	//this is Native
+	static int waterbenefit = 500;
+	static int gardenbenefit = 500;
+	static int weatherbenefit = 500;
+	static int duration = 30;
+	
+	public ScarletOak(int xLoc, int yLoc){
+		super(xLoc, yLoc, weatherbenefit, gardenbenefit, waterbenefit, duration);
+		name = "Scarlet Oak";
+		try {
+			this.image = ImageIO.read(new File("images/arbovitae.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println(this.waterbenefit+ ""+ this.gardenbenefit+""+ this.weatherbenefit);
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+}

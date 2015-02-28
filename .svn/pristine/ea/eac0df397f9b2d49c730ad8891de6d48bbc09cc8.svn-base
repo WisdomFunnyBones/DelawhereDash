@@ -1,0 +1,21 @@
+package View;
+
+import java.awt.Color;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import Controller.GameThread;
+
+public class EndPanel extends JPanel {
+
+	JButton homeButton;
+	
+	public EndPanel(){
+		setBackground(Color.black);
+		homeButton = new JButton("Home");
+		add(homeButton);
+		GameThread.setIntroTrue();
+	}
+	
+}

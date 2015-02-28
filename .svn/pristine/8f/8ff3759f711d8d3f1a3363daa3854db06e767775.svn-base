@@ -1,0 +1,58 @@
+package Model;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import net.coobird.thumbnailator.Thumbnails;
+import View.GameFrame;
+
+
+// this class stores the items that astro has picked up. Detected and set through
+// the controller class by the "collided" method
+public class Inventory {
+
+	public static LaneObject[] inventory;//array of max size 6
+	
+	public Inventory(){
+		 inventory = new LaneObject[6]; 
+		
+	}
+	
+	public boolean addItem(LaneObject object){
+		// loops through array of inventory
+		for(int i = 0; i < Inventory.inventory.length; i++){
+			// if there's an empty spot in the array it adds the object. 
+			// otherwise returns false
+			if(Inventory.inventory[i] == null){
+				Inventory.inventory[i] = object;
+				OnItemAddListener listener = GameFrame.getGamePlayPanel();
+				listener.onItemAdded(i, object);
+				return true; // returns true if object was added
+			}
+		}
+		return false;
+	}
+	
+	public static BufferedImage resize(BufferedImage bimage){
+		try {
+			return Thumbnails.of(bimage).size(100, 100).asBufferedImage();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		};
+		return bimage;
+	}
+	
+	public static LaneObject[] getInventory(){
+		return inventory;
+	}
+	
+	public void setInventory(LaneObject[] inventory){
+		Inventory.inventory = inventory;
+	}
+
+	public interface OnItemAddListener{
+		public void onItemAdded(int position, LaneObject laneObject);
+	}
+	
+}

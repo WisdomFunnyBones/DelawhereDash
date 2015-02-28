@@ -1,0 +1,201 @@
+package Model;
+
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+public class Astronaut {
+	int stamina; // health, depletes till end of gameplay sequence
+	int yLoc; //Astronaut's current y position
+	int xLoc; // Astronaut's current x position
+	boolean damaged; // Astronaut been hit - if true he is damaged
+	boolean invincibility; // Astronaut cannot be hurt
+	int position = 2; // 0 is farthest left, 0,1,2,3,4
+	BufferedImage astro;
+	Image astroImgfull;
+	Image astroImg1_7;
+	Image astroImg2_7;
+	Image astroImg3_7;
+	Image astroImg4_7;
+	Image astroImg5_7;
+	Image astroImg6_7;
+	Image astroImgempty;
+	Image dmgastroImgfull;
+	Image dmgastroImg1_7;
+	Image dmgastroImg2_7;
+	Image dmgastroImg3_7;
+	Image dmgastroImg4_7;
+	Image dmgastroImg5_7;
+	Image dmgastroImg6_7;
+	Image dmgastroImgempty;
+
+	public Astronaut(int stamina, int xLoc, int yLoc) {
+		this.xLoc=xLoc;
+		this.yLoc=yLoc;
+		this.stamina = stamina;
+		try {
+			astroImgfull = ImageIO.read(new File("images/astro/normal/astro_full.png"));
+			astroImg1_7 = ImageIO.read(new File("images/astro/normal/astro_1-7.png"));
+			astroImg2_7 = ImageIO.read(new File("images/astro/normal/astro_2-7.png"));
+			astroImg3_7 = ImageIO.read(new File("images/astro/normal/astro_3-7.png"));
+			astroImg4_7 = ImageIO.read(new File("images/astro/normal/astro_4-7.png"));
+			astroImg5_7 = ImageIO.read(new File("images/astro/normal/astro_5-7.png"));
+			astroImg6_7 = ImageIO.read(new File("images/astro/normal/astro_6-7.png"));
+			astroImgempty = ImageIO.read(new File("images/astro/normal/astro_empty.png"));
+			dmgastroImgfull = ImageIO.read(new File("images/astro/damaged/astro_dmg_full.png"));
+			dmgastroImg1_7 = ImageIO.read(new File("images/astro/damaged/astro_dmg_1-7.png"));
+			dmgastroImg2_7 = ImageIO.read(new File("images/astro/damaged/astro_dmg_2-7.png"));
+			dmgastroImg3_7 = ImageIO.read(new File("images/astro/damaged/astro_dmg_3-7.png"));
+			dmgastroImg4_7 = ImageIO.read(new File("images/astro/damaged/astro_dmg_4-7.png"));
+			dmgastroImg5_7 = ImageIO.read(new File("images/astro/damaged/astro_dmg_5-7.png"));
+			dmgastroImg6_7 = ImageIO.read(new File("images/astro/damaged/astro_dmg_6-7.png"));
+			dmgastroImgempty = ImageIO.read(new File("images/astro/damaged/astro_dmg_empty.png"));
+		}catch (IOException e3) {
+			e3.printStackTrace();
+		}
+	}
+	
+	public Image getAstroImgfull(){
+		return this.astroImgfull;
+	}
+	public Image getAstroImg1_7(){
+		return this.astroImg1_7;
+	}
+	public Image getAstroImg2_7(){
+		return this.astroImg2_7;
+	}
+	public Image getAstroImg3_7(){
+		return this.astroImg3_7;
+	}
+	public Image getAstroImg4_7(){
+		return this.astroImg4_7;
+	}
+	public Image getAstroImg5_7(){
+		return this.astroImg5_7;
+	}
+	public Image getAstroImg6_7(){
+		return this.astroImg6_7;
+	}
+	public Image getAstroImgempty(){
+		return this.astroImgempty;
+	}
+	
+	public Image getdmgAstroImgfull(){
+		return this.dmgastroImgfull;
+	}
+	public Image getdmgAstroImg1_7(){
+		return this.dmgastroImg1_7;
+	}
+	public Image getdmgAstroImg2_7(){
+		return this.dmgastroImg2_7;
+	}
+	public Image getdmgAstroImg3_7(){
+		return this.dmgastroImg3_7;
+	}
+	public Image getdmgAstroImg4_7(){
+		return this.dmgastroImg4_7;
+	}
+	public Image getdmgAstroImg5_7(){
+		return this.dmgastroImg5_7;
+	}
+	public Image getdmgAstroImg6_7(){
+		return this.dmgastroImg6_7;
+	}
+	public Image getdmgAstroImgempty(){
+		return this.dmgastroImgempty;
+	}
+	
+
+	//When we get size compare y to that.
+	public boolean collided(LaneObject o){
+		if (o.xLoc==this.xLoc && o.yLoc==yLoc){
+			Obstacle obstacle = (Obstacle) o;
+			this.depleteStamina(obstacle.getStaminaPenalty());
+			return true;
+		}
+		return false;
+	}
+
+	public int getStamina() {
+		return this.stamina;
+	}
+
+	public int getPosition() {
+		return this.position;
+	}
+
+	//Move left if you can move left (increment position down).
+	public boolean moveLeft() {
+		boolean moved = false;
+		switch (position) {
+		case 1:
+			position = 0;
+			moved = true;
+			break;
+		case 2:
+			position = 1;
+			moved = true;
+			break;
+		case 3:
+			position = 2;
+			moved = true;
+			break;
+		case 4:
+			position = 3;
+			moved = true;
+			break;
+		}
+		return moved;
+	}
+
+	//Moves right (increments position) if you can move right.
+	public boolean moveRight() {
+		boolean moved = false;
+		switch (position) {
+		case 0:
+			position = 1;
+			moved = true;
+			break;
+		case 1:
+			position = 2;
+			moved = true;
+			break;
+		case 2:
+			position = 3;
+			moved = true;
+			break;
+		case 3:
+			position = 4;
+			moved = true;
+			break;
+		}
+		return moved;
+	}
+
+	public void depleteStamina(int amount) {
+		this.stamina -= amount;
+	}
+	public void setStamina(int amount) {
+		this.stamina = amount;
+	}
+
+	public int getY() {
+		return yLoc;
+	}
+
+	public void Damaged(boolean damage){
+		if(damage){
+			damaged = true;
+		}
+		else{
+			damaged = false;
+		}
+	}
+
+	public boolean getDamaged(){
+		return damaged;
+	}
+
+}

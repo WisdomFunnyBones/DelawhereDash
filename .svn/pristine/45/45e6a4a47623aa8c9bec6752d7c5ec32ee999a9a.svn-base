@@ -1,0 +1,40 @@
+package Test;
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import org.junit.Test;
+
+import Model.QuestionMark;
+import Model.QuestionMark.Question;
+
+public class QuestionsTest {
+
+	@Test
+	public static void test() {
+		QuestionMark qm = null;
+		int count = 0;
+		try {
+			qm = new QuestionMark(0,1);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("cant read questions");
+		}
+		for(Question i : qm.questions){
+			count++;
+//			System.out.println(i.statement);
+//			System.out.println(i.question);
+//			System.out.println(i.correctAnswer);
+//			for(int k = 0; k < i.answers.size(); k++){
+//				System.out.println(i.answers.get(k));
+//			}
+		}
+//		System.out.println("Number of Questions is " + count);
+	}
+	
+	public static void main(String[] arg0){
+		test();
+	}
+
+}

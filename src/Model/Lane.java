@@ -1,0 +1,197 @@
+package Model;
+
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import Controller.Controller;
+
+
+public class Lane {
+
+	private int numLanes = 5;
+	private int laneSize = 4;
+	LaneObject[][] lanes;
+	public static boolean questionMode = false;
+	public Image lanesImg;
+	private int numAnimals = 0;
+	private int numPlants = 0;
+	private int numCloNPud = 0;
+	private int maxCloNPud;
+	private int maxAnimals;
+	private int maxnumPlants = 8;
+	public int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+
+	public Lane() {
+		lanes = new LaneObject[numLanes][laneSize];
+		//populate();
+		try {
+			lanesImg = ImageIO.read(new File("images/tiledgrass.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+	public Image getLanesImg(){
+		return this.lanesImg;
+	}
+
+	public LaneObject[][] getLanes(){
+		return lanes;
+	}
+	public void setObstacles() 
+	{
+		if (Controller.getEnviro().getAirQuality() > 1600) {
+			maxCloNPud = 0;
+		}
+		else if (Controller.getEnviro().getAirQuality() > 1400) {
+			maxCloNPud = 2;
+		}
+		else 
+			maxCloNPud = 4;
+		int animal = Controller.getEnviro().getAnimalQuality();
+		if(animal > 2500)
+			maxAnimals = 0;
+		else if (animal > 2000)
+			maxAnimals = 2;
+		else if (animal > 1500)
+			maxAnimals = 4;
+		else if (animal > 1000)
+			maxAnimals = 6;
+		else if (animal > 500)
+			maxAnimals = 7;
+		else
+			maxAnimals = 8;
+
+	}
+
+	//Dropping random obstacles 
+	public void addNewItem(boolean Zombie) {
+		setObstacles();
+		int randomX = (int) (Math.random() *numLanes);
+		int index = (int)(Math.random() * laneSize);
+		int y = (int)(Math.random() * height / 3 + height / 5);
+		int[] other = new int[4];
+		if (questionMode != true){
+			if (lanes[randomX][index] == null) {
+				//This only works for size two or one!
+				for (int i = 1; i < 4; i ++)
+				{
+					if (lanes[randomX][(index + i) % 4] != null)
+					{
+						other[i] = lanes[randomX][(index + i) % 4].getY();
+					}
+				}
+				for (int otherY : other) {
+					if (otherY + y <  y) {
+						y = y + Math.abs(otherY) + Controller.getImgRes().getastroImgfull().getHeight(null) * 3 / 2;
+					}
+				}
+				
+				if(Zombie){
+					lanes[randomX][index] = new ZombieGrass(Controller.getFrame().getGamePlayPanel().getBossx() , Controller.getFrame().getGamePlayPanel().getBossY() );
+				}
+				else{
+				int rand = (int) (Math.random() * 12); 
+				switch (rand) {
+				case 0:
+					if (numAnimals < maxAnimals) {
+						lanes[randomX][index] = new Rabbit(randomX , -y );
+						numAnimals ++;
+					}
+					break;
+				case 1:
+					if (numCloNPud < maxCloNPud){
+						lanes[randomX][index] = new GasCloud(randomX , -y);
+						numCloNPud ++;
+					}
+					break;
+				case 2:
+					if (numCloNPud < maxCloNPud){
+						lanes[randomX][index] = new Puddle(randomX , -y);
+						numCloNPud ++;
+					}
+					break;
+				case 3:
+					if (numPlants < maxnumPlants) {
+						lanes[randomX][index] = new Arbovitae(randomX , -y);
+						numPlants ++;
+					}
+					break;
+				case 4:
+					if (numAnimals < maxAnimals) {
+						lanes[randomX][index] = new Bee(randomX, -y);
+						numAnimals++;
+					}
+					break;
+				case 5:
+					if (numAnimals < maxAnimals) {
+						lanes[randomX][index] = new Fox(randomX, -y);
+						numAnimals++;
+					}
+				case 6:
+					if (numAnimals < maxAnimals) {
+						lanes[randomX][index] = new Deer(randomX, -y);
+						numAnimals++;
+					}
+				case 7:
+					if (numPlants < maxnumPlants) {
+						lanes[randomX][index] = new BradfordPear(randomX, -y);
+						numPlants++;
+					}
+				case 8:
+					if (numPlants < maxnumPlants) {
+						lanes[randomX][index] = new BurningBush(randomX, -y);
+						numPlants++;
+					}
+				case 9:
+					if (numPlants < maxnumPlants) {
+						lanes[randomX][index] = new CommonMilkweed(randomX, -y);
+						numPlants++;
+					}
+				case 10:
+					if (numPlants < maxnumPlants) {
+						lanes[randomX][index] = new MaidenGrass(randomX, -y);
+						numPlants++;
+					}
+				case 11:
+					if (numPlants < maxnumPlants) {
+						lanes[randomX][index] = new ScarletOak(randomX, -y);
+						numPlants++;
+					}
+				}
+				
+
+				}
+			}
+		}
+		else{
+			//fill lanes with question marks
+		}
+
+	}
+	public void removeAnimals() {
+		numAnimals--;
+	}
+	public void removePlants() {
+		numPlants--;
+	}
+
+	public void removeCloNPud() {
+		numCloNPud--;
+	}
+
+	public boolean equals(Object o) {
+		if (o instanceof Lane) {
+			Lane newLane = (Lane) o;
+			if (this.laneSize == newLane.laneSize
+					&& this.numLanes == newLane.numLanes) {
+				return true;
+			}
+		}
+		return false;
+	}
+}

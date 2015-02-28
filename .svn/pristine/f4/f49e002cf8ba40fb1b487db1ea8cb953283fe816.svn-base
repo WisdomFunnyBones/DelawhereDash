@@ -1,0 +1,50 @@
+package View;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import Controller.GameThread;
+
+public class EndPanel extends JPanel {
+
+	JButton homeButton;
+	
+	int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+	int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+	
+	@Override
+	protected void paintComponent(Graphics g) {
+		Image goodEnd = null;
+		Image badEnd = null;
+		try {
+			goodEnd = ImageIO.read(new File("images/Frame9.jpg"));
+			badEnd = ImageIO.read(new File("images/Frame10.jpg"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		goodEnd = goodEnd.getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
+		badEnd = badEnd.getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
+		g.drawImage(badEnd, 0, 0, null);
+	}
+	
+	
+	
+	public EndPanel(){
+		setBackground(Color.black);
+		homeButton = new JButton("Home");
+		add(homeButton);
+		GameThread.setIntroTrue();
+	}
+	
+	
+	
+}

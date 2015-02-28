@@ -1,0 +1,31 @@
+package Model;
+
+import java.awt.image.BufferedImage;
+
+public class Water {
+	
+	private BufferedImage Great;
+	private BufferedImage Good;
+	private BufferedImage Satifactory;
+	private BufferedImage Bad;
+	private BufferedImage Awefull;
+	private static int waterCondition = 100;
+	
+	public int getWaterConditon(){
+		return waterCondition;
+	}
+
+	
+	// updates the water condition depending on the plant that was picked up
+	public void update(){
+		LaneObject[] playerInventory = Inventory.getInventory();
+		int count = 0;
+		for(LaneObject i : playerInventory){
+			if(i != null){
+			count+= ((Plant) i).getWaterbenefit();
+		}}
+		waterCondition += count;
+	}
+	
+}
+

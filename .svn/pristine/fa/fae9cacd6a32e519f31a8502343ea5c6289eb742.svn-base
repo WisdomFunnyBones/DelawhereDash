@@ -1,0 +1,99 @@
+package Model;
+
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import Controller.Controller;
+
+
+public class Lane {
+
+	private int numLanes = 5;
+	private int laneSize = 2;
+	LaneObject[][] lanes;
+	public static boolean questionMode = false;
+	public Image lanesImg;
+	public int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+
+	public Lane() {
+		lanes = new LaneObject[numLanes][laneSize];
+		//populate();
+		try {
+			lanesImg = ImageIO.read(new File("images/tiledgrass.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	public Image getLanesImg(){
+		return this.lanesImg;
+	}
+
+	public LaneObject[][] getLanes(){
+		return lanes;
+	}
+
+	//Dropping random obstacles 
+	public void addNewItem() {
+		int randomX = (int) (Math.random() *numLanes);
+		int index = (int)(Math.random() * laneSize);
+		int y = (int)(Math.random() * height / 2 + height / 3);
+		int other = 0;
+		if (questionMode != true){
+			if (lanes[randomX][index] == null) {
+				//This only works for size two or one!
+				if (lanes[randomX][(index+1)%2] != null) {
+					other = lanes[randomX][(index+1)%2].getY();
+				}
+				if (other + y <  y) {
+					y = y + Math.abs(other);
+				}
+				int rand = (int) (Math.random() * 5); 
+				switch (rand) {
+				case 0:
+					lanes[randomX][index] = new Rabbit(randomX , -y );
+					break;
+				case 1:
+					lanes[randomX][index] = new GasCloud(randomX , -y);
+					break;
+				case 2:
+					lanes[randomX][index] = new Puddle(randomX , -y);
+					break;
+				case 3:
+					lanes[randomX][index] = new Arbovitae(randomX , -y);
+					break;
+//				case 4:
+//					lanes[randomX][index] = new Bee(randomX, -y);
+//					break;
+//				case 5:
+//					lanes[randomX][index] = new Fox(randomX, -y);
+
+				}
+			}
+		}
+		else{
+			//fill lanes with question marks
+		}
+
+	}
+
+	// This method will remove an object at a specified point and return it.
+	public LaneObject removeAt(int x, int y) {
+		return new GasCloud(0,0);
+	}
+
+	public boolean equals(Object o) {
+		if (o instanceof Lane) {
+			Lane newLane = (Lane) o;
+			if (this.laneSize == newLane.laneSize
+					&& this.numLanes == newLane.numLanes) {
+				return true;
+			}
+		}
+		return false;
+	}
+}

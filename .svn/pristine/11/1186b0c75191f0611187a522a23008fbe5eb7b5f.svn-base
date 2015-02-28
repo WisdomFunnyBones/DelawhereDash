@@ -1,0 +1,16 @@
+package Model;
+
+
+public abstract class Obstacle extends LaneObject{
+	
+	int staminaPenalty;
+	
+	public int getStaminaPenalty() {
+		return staminaPenalty;
+	}
+
+	Obstacle(int xLoc, int yLoc, int staminaPenalty){
+		super(xLoc, yLoc, staminaPenalty);
+	}
+		
+}

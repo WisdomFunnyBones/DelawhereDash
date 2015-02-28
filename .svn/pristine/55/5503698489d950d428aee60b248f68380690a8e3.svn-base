@@ -1,0 +1,49 @@
+package Model;
+
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+public class Water {
+	
+	private BufferedImage Great;
+	private BufferedImage Good;
+	private BufferedImage Satifactory;
+	private BufferedImage Bad;
+	private BufferedImage Awefull;
+	private static int waterCondition = 100;
+	public Image waterImg;
+	
+	public Water(){
+		try {
+			waterImg = ImageIO.read(new File("images/waves.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public int getWaterConditon(){
+		return waterCondition;
+	}
+	
+	public Image getWaterImg(){
+		return waterImg;
+	}
+
+	
+	// updates the water condition depending on the plant that was picked up
+	public void update(){
+		LaneObject[] playerInventory = Inventory.getInventory();
+		int count = 0;
+		for(LaneObject i : playerInventory){
+			if(i != null){
+			count+= ((Plant) i).getWaterbenefit();
+		}}
+		waterCondition += count;
+	}
+	
+}
+

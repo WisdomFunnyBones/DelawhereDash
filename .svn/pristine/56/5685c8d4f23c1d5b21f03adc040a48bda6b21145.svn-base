@@ -1,0 +1,30 @@
+package Model;
+
+import java.awt.image.BufferedImage;
+
+public class Weather {
+	
+	private BufferedImage Great;
+	private BufferedImage Good;
+	private BufferedImage Satifactory;
+	private BufferedImage Bad;
+	private BufferedImage Awefull;
+	private static int weatherCondition;
+	
+	public int getWeatherCondition(){
+		return weatherCondition;
+	}
+
+	// updates the water condition depending on the plant that was picked up
+	public void update(){
+		LaneObject[] inventory = Inventory.getInventory();
+		int count = 0;
+		for(LaneObject i : inventory){
+			if( i != null){
+				count+= ((Plant) i).getWeatherbenefit();
+			}
+		}
+		weatherCondition += count;
+	}
+	
+}

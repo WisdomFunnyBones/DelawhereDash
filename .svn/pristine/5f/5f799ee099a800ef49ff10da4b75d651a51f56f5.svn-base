@@ -1,0 +1,190 @@
+package Controller;
+
+
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Timer;
+
+import Model.Astronaut;
+import Model.Environment;
+import Model.Garden;
+import Model.Inventory;
+import Model.Lane;
+import Model.LaneObject;
+import Model.Obstacle;
+import Model.Plant;
+import Model.Water;
+import Model.Weather;
+import View.GameFrame;
+
+public class Controller {
+
+
+	static int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+	static int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+
+	public static int STAMINA = 6300;
+	static int STARTINGX = 100;
+	static int STARTINGY = (screenHeight * 9) / 12;
+	static int SPEED = 5;	
+	
+	public static Astronaut astro;
+	public static Lane lanes;
+	public static GameFrame frame;
+	public static Inventory inventory;
+	public static Garden garden;
+	public static Water water;
+	public static Weather weather;
+	public static Environment enviro;
+	public static Timer questionTimer;
+	public static Timer showQuestionMarkTimer;
+	public static int currentTime = 0;
+
+	public static int getStamina(){
+		return STAMINA;
+	}
+	
+	/*
+	 * Creates the things necessary for model and view to do their thing.
+	 */
+	public static void createGame() {
+		astro = new Astronaut(STAMINA, STARTINGX, STARTINGY);
+		lanes = new Lane();
+		enviro = new Environment();
+		// creates new inventory class, which creates a new empty array of sized
+		// 6
+		// can be accessed with Inventory.getInventory()
+		inventory = new Inventory();
+		garden = new Garden();
+		water = new Water();
+		weather = new Weather();
+		frame = new GameFrame();
+		questionTimer = new Timer(1000, new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				currentTime++;
+			}
+			
+		});
+		questionTimer.start();
+		Controller.move();
+
+	}
+	
+	public static boolean getIntro(){
+		return GameThread.getIntro();
+	}
+	
+	public static void setIntro(){
+		GameThread.setIntro();
+	}
+	
+	public static int getSpeed(){
+		return SPEED;
+	}
+
+	public static Environment getEnviro() {
+		return enviro;
+	}
+
+	public interface OnDamagedListener {
+		public void onDamaged();
+	}
+
+	static public LaneObject collided(LaneObject laneObject) {
+		LaneObject collidedObject;
+		int astroX = astro.getPosition();
+		int astroY = astro.getY();
+		int height = laneObject.getImage().getHeight(null);
+		// System.out.println("Astro's position"+ astro.getPosition());
+
+		if (astroX == laneObject.getX()) {
+			if (GameFrame.getGamePlayPanel().getAstroYCoord() < laneObject.getY()
+					+ (0.8)* (GameFrame.getGamePlayPanel().getAstroHeight())
+					&& GameFrame.getGamePlayPanel().getAstroYCoord()+(GameFrame.getGamePlayPanel().getAstroHeight()) > laneObject
+							.getY() && laneObject instanceof Obstacle) {
+				// depletes stamina based on obstacle's staminaPenalty
+				// plants have staminaPenalty = 0;
+				collidedObject = laneObject;
+				if (laneObject instanceof Obstacle && !astro.getDamaged()) {
+					OnDamagedListener listener = GameFrame.getGamePlayPanel();
+					listener.onDamaged();
+					Obstacle obstacle = (Obstacle) laneObject;
+					astro.depleteStamina(obstacle.getStaminaPenalty());
+					System.out.println(obstacle.getStaminaPenalty());
+				}
+
+				// checks type of object "p" denotes plants and "o" denotes
+				// Obstacles
+
+				return (collidedObject);
+			}
+			else if (GameFrame.getGamePlayPanel().getAstroYCoord() < laneObject.getY()
+						+ (1.4)* (GameFrame.getGamePlayPanel().getAstroHeight())
+						&& GameFrame.getGamePlayPanel().getAstroYCoord()+(GameFrame.getGamePlayPanel().getAstroHeight()) > laneObject
+								.getY() && laneObject instanceof Plant) {
+				collidedObject = laneObject;
+				return (collidedObject);
+			}
+		}
+		return null;
+	}
+
+	// this updates the panels' models. They should all have an update method
+	// that gets called
+	public static void updatePanels(LaneObject collidedObject) {
+		if (inventory.addItem(collidedObject)) {
+			garden.update(); // calls an update in garden class to add or remove
+								// elements from DataStructure.
+			water.update(); // calls update in water class
+			weather.update(); // calls update in weather class
+		}
+	}
+
+	public static Astronaut getAstro() {
+		return astro;
+	}
+
+	public static Lane getLanes() {
+		return lanes;
+	}
+
+	public static void repaint() {
+		//frame.revalidate();
+		GameFrame.getGamePlayPanel().getGardenPanel().repaint();
+		GameFrame.getGamePlayPanel().getLanesPanel().repaint();
+	}
+
+	public static void move() {
+		if(!GameThread.getIntro()){
+		Lane l = getLanes();
+		for (LaneObject[] laneArray : l.getLanes()) {
+			for (int i = 0; i < laneArray.length; i++) {
+				if (laneArray[i] != null) {
+					if (laneArray[i].getY() > (Toolkit.getDefaultToolkit()
+							.getScreenSize().height*(9))/10
+							- laneArray[i].getImage().getHeight(null)) {
+						laneArray[i] = null;
+
+					} else
+						laneArray[i].setY(SPEED);
+				}
+			}
+		}
+		}
+		frame.getGamePlayPanel().updateBackground();
+	}
+
+	public static void reset() {
+		astro.setStamina(STAMINA);
+
+	}
+
+	public static GameFrame getFrame() {
+		return frame;
+	}
+
+}
